@@ -5,3 +5,6 @@ dist/
 build/
 .vscode/
 .DS_Store
+*.xlsx
+*.csv
+.venv
