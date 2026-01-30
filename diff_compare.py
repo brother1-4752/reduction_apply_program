@@ -1,12 +1,48 @@
 import pandas as pd
 from collections import defaultdict
+import os
+import sys
+import re
+
+
+# =========================
+# 파일 자동 선택 함수
+# =========================
+def find_compare_files():
+    # data_preprocessing 실행 후 얻은 결과 파일 경로
+    base_dir = os.path.join("output", "data_preprocessing")
+
+    if not os.path.isdir(base_dir):
+        print(f"❌ 디렉토리가 존재하지 않습니다: {base_dir}")
+        sys.exit(1)
+
+    pattern = re.compile(r"(\d{4}-\d{2}-\d{2})_output\.xlsx")
+
+    files = []
+    for f in os.listdir(base_dir):
+        m = pattern.match(f)
+        if m:
+            date = pd.to_datetime(m.group(1))
+            files.append((date, f))
+
+    if len(files) < 2:
+        print("❌ 비교 가능한 파일이 2개 이상 필요합니다.")
+        sys.exit(1)
+
+    # 날짜 기준 정렬
+    files.sort(key=lambda x: x[0])
+
+    prev_file = os.path.join(base_dir, files[0][1])
+    curr_file = os.path.join(base_dir, files[-1][1])
+
+    return prev_file, curr_file
+
 
 # =========================
 # 설정
 # =========================
-PREV_FILE = "2026-01-20_output.xlsx"
-CURR_FILE = "2026-01-26_output.xlsx"  # TODO: 업데이트할때마다 변경 필요
-OUTPUT_FILE = f"{PREV_FILE}↔{CURR_FILE} 비교결과.xlsx"
+PREV_FILE, CURR_FILE = find_compare_files()
+OUTPUT_FILE = f"output/diff_compare/{os.path.basename(PREV_FILE)}↔{os.path.basename(CURR_FILE)}_비교결과.xlsx"
 
 KEY_COLS = ["회원번호", "이름"]
 
@@ -16,7 +52,9 @@ KEY_COLS = ["회원번호", "이름"]
 prev = pd.read_excel(PREV_FILE)
 curr = pd.read_excel(CURR_FILE)
 
-print("✅ 파일 로드 완료")
+print("📄 비교 파일 선택 완료")
+print(f" - 이전: {os.path.basename(PREV_FILE)}")
+print(f" - 현재: {os.path.basename(CURR_FILE)}")
 print(f" - 이전 데이터: {len(prev)}건")
 print(f" - 현재 데이터: {len(curr)}건")
 
@@ -119,7 +157,7 @@ for key in all_keys:
                         "수강처": cr["수강처"],
                         "회원번호": member_no,
                         "이름": name,
-                        "등록건 수": r["등록건 수"],
+                        "등록건 수": cr["등록건 수"],
                         "강좌": cr["강좌"],
                         "금액": cr["금액"],
                         "감면액": cr["감면액"],

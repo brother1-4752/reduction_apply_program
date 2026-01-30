@@ -183,6 +183,14 @@ def get_steps():
                 ctrl("c"),
             ),
         ),
+        # (
+        #     "5-3. [EXCEL] Enter",
+        #     lambda: (
+        #         pyautogui.press("enter"),
+        #         time.sleep(0.5),
+        #         pyautogui.press("enter"),
+        #     ),
+        # ),
         ("6-1. [EXCEL] 분기 시트 선택", lambda: (click("분기_시트"), time.sleep(0.5))),
         (
             "6-2. [EXCEL] 최종데이터 붙여넣기",
@@ -192,7 +200,15 @@ def get_steps():
                 paste_values_to_other_sheet(),
             ),
         ),
-        ("6-3. [EXCEL] 아래 행으로 이동", lambda: below_click("아래로")),
+        # (
+        #     "6-4. [EXCEL] Enter",
+        #     lambda: (
+        #         pyautogui.press("enter"),
+        #         time.sleep(0.5),
+        #         pyautogui.press("enter"),
+        #     ),
+        # ),
+        ("6-4. [EXCEL] 아래 행으로 이동", lambda: below_click("아래로")),
     ]
 
 

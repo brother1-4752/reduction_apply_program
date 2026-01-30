@@ -11,20 +11,19 @@ import os
 # csv 자동 탐색
 # =====================
 def find_csv_file():
-    csv_files = [f for f in os.listdir(".") if f.lower().endswith(".csv")]
+    input_dir = os.path.join("input", "data_preprocessing")
+    filename = "제98기 일일접수세부내역(20251215-20260129).csv"
+    path = os.path.join(input_dir, filename)
 
-    if not csv_files:
-        print("❌ 현재 디렉토리에 CSV 파일이 없습니다.")
+    if not os.path.isdir(input_dir):
+        print(f"❌ '{input_dir}' 폴더가 존재하지 않습니다.")
         sys.exit(1)
 
-    if len(csv_files) > 1:
-        print("❌ CSV 파일이 여러 개 있습니다:")
-        for f in csv_files:
-            print(" -", f)
-        print("CSV 파일을 하나만 남겨주세요.")
+    if not os.path.isfile(path):
+        print(f"❌ '{path}' 파일이 존재하지 않습니다.")
         sys.exit(1)
 
-    return csv_files[0]
+    return path
 
 
 # =====================
@@ -32,7 +31,8 @@ def find_csv_file():
 # =====================
 INPUT_CSV = find_csv_file()
 yesterday_str = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-OUTPUT_XLSX = f"{yesterday_str}_output.xlsx"
+OUTPUT_DIR = os.path.join("output", "data_preprocessing")
+OUTPUT_XLSX = os.path.join(OUTPUT_DIR, f"{yesterday_str}_output.xlsx")
 
 BASE_AMOUNTS = [60000, 50000, 70000, 40000, 80000, 90000, 110000]
 RATIOS = [1.0, 0.9, 0.5, 0.45]
@@ -52,8 +52,29 @@ print(f"📄 출력 Excel: {OUTPUT_XLSX}")
 # 유틸
 # =====================
 def extract_course(text):
-    m = re.search(r"\[(.*?)\]", str(text))
-    return m.group(1).split()[0] if m else "오기"
+    text = str(text)
+
+    # 1️⃣ 대괄호 안만 추출
+    bracket_match = re.search(r"\[(.*?)\]", text)
+    if not bracket_match:
+        return None
+
+    inside = bracket_match.group(1)
+
+    # 2️⃣ '개월' 제거
+    inside = re.sub(r"\d+\s*개월", "", inside)
+
+    # 3️⃣ 카테고리 제거 (앞쪽 첫 덩어리)
+    # 공백 2칸 이상 기준으로 분리
+    parts = re.split(r"\s{2,}", inside)
+
+    if len(parts) < 2:
+        return None
+
+    course = parts[1]
+
+    # 4️⃣ 공백 정리
+    return re.sub(r"\s+", "", course)
 
 
 def extract_amount(cash, card):
