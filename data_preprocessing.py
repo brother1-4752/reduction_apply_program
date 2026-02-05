@@ -12,7 +12,7 @@ import os
 # =====================
 def find_csv_file():
     input_dir = os.path.join("input", "data_preprocessing")
-    filename = "제98기 일일접수세부내역(20251215-20260129).csv"
+    filename = "제98기 일일접수세부내역(20251215-20260201).csv"
     path = os.path.join(input_dir, filename)
 
     if not os.path.isdir(input_dir):
