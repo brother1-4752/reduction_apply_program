@@ -29,10 +29,10 @@ def find_compare_files():
         print("❌ 비교 가능한 파일이 2개 이상 필요합니다.")
         sys.exit(1)
 
-    # 날짜 기준 정렬
+    # 날짜 기준 정렬: 최근 일자 정렬 후 2개 선택(prev: 최근 직전, curr: 가장 최근)
     files.sort(key=lambda x: x[0])
 
-    prev_file = os.path.join(base_dir, files[0][1])
+    prev_file = os.path.join(base_dir, files[-2][1])
     curr_file = os.path.join(base_dir, files[-1][1])
 
     return prev_file, curr_file

@@ -8,11 +8,11 @@ import os
 
 
 # =====================
-# csv 자동 탐색
+# csv 탐색
 # =====================
 def find_csv_file():
     input_dir = os.path.join("input", "data_preprocessing")
-    filename = "제98기 일일접수세부내역(20251215-20260201).csv"
+    filename = "제98기 일일접수세부내역(20251215-20260208).csv"
     path = os.path.join(input_dir, filename)
 
     if not os.path.isdir(input_dir):
@@ -36,7 +36,6 @@ OUTPUT_XLSX = os.path.join(OUTPUT_DIR, f"{yesterday_str}_output.xlsx")
 
 BASE_AMOUNTS = [60000, 50000, 70000, 40000, 80000, 90000, 110000]
 RATIOS = [1.0, 0.9, 0.5, 0.45]
-
 WHITELIST = {int(base * ratio) for base in BASE_AMOUNTS for ratio in RATIOS}
 
 DETAIL_REGEX = re.compile(
