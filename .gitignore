@@ -7,4 +7,5 @@ build/
 .DS_Store
 *.xlsx
 *.csv
+*.pdf
 .venv
