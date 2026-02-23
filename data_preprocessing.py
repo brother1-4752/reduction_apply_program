@@ -81,7 +81,15 @@ def extract_amount(cash, card):
     card = int(str(card).replace(",", ""))
     return cash if cash != 0 else card
 
-
+# ※ 예외 케이스
+# 22,500원의 -3% = 21,825
+#   → 시스템 표시값: 21,820 또는 21,830
+#
+# 31,500원의 -3% = 30,555
+#   → 시스템 표시값: 30,550 또는 30,560
+#
+# 위 금액은 시스템 표시값 기준으로 들어오므로,
+# 해당 amount를 실제 원금(22,500 / 31,500)으로 복원하여 처리한다.
 def refund_amount(raw):
     """
     24250 → 25000
@@ -222,17 +230,43 @@ for _, row in df.iterrows():
 #     (("10000000", "서예"), "현금", -24250)
 # ]
 # =====================
+EXCEPTION_ORIGINAL_MAP = {
+    21820: 22500,
+    21830: 22500,
+    30550: 31500,
+    30560: 31500,
+}
+
 for key, payment, amount in refund_rows:
     if key not in records or not records[key]:
         continue
 
     last_record = records[key][-1]
 
-    # ---------------------
-    # 현금 부분환불
-    # ---------------------
+    # ---------------------------------------
+    # 현금 부분환불 처리
+    #
+    # ※ 예외 케이스
+    # 22,500원의 -3% = 21,825
+    #   → 시스템 표시값: 21,820 또는 21,830
+    #
+    # 31,500원의 -3% = 30,555
+    #   → 시스템 표시값: 30,550 또는 30,560
+    #
+    # 위 금액은 시스템 표시값 기준으로 들어오므로,
+    # 해당 amount를 실제 원금(22,500 / 31,500)으로 복원하여 처리한다.
+    # ---------------------------------------
+
     if payment == "현금":
-        calc = refund_amount(abs(amount))
+        refund_base = abs(amount)
+
+        # 🔥 예외 케이스 처리
+        if refund_base in EXCEPTION_ORIGINAL_MAP:
+            last_record["금액"] -= EXCEPTION_ORIGINAL_MAP[refund_base]
+            continue
+
+        # 🔥 일반 케이스
+        calc = refund_amount(refund_base)
 
         if calc in WHITELIST:
             last_record["금액"] -= calc
