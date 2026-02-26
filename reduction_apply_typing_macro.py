@@ -221,6 +221,7 @@ def get_steps():
         #     ),
         # ),
         ("6-4. [EXCEL] 아래 행으로 이동", lambda: below_click("아래로")),
+        ("7-1. [EXCEL] 저장", lambda: ctrl("s")),
     ]
 
 

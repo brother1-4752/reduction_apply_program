@@ -11,7 +11,7 @@ def preprocess_fill_previous_row():
     output_dir = "output/preprocess_fill_previous_row"
     today_str = datetime.today().strftime("%Y-%m-%d")
 
-    input_filename = "동작문화원 감면신청서_26년도 1분기_20260223.csv"
+    input_filename = "동작문화원 감면신청서_26년도 1분기_20260225.csv"
     output_filename = f"동작문화원 감면신청서_26년도 1분기_output_{today_str}.xlsx"
 
     input_path = os.path.join(input_dir, input_filename)
@@ -27,6 +27,14 @@ def preprocess_fill_previous_row():
 
     # 컬럼명 공백 제거
     df.columns = df.columns.str.strip()
+
+    # ============================
+    # 문자열 정리 (🔥 중요)
+    # ============================
+
+    df["회원번호"] = df["회원번호"].astype(str).str.strip()
+    df["이름"] = df["이름"].astype(str).str.strip()
+    df["등록건 수"] = df["등록건 수"].astype(str).str.strip()
 
     # Unnamed 컬럼 제거
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
