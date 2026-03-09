@@ -12,7 +12,7 @@ import os
 # =====================
 def find_csv_file():
     input_dir = os.path.join("input", "data_preprocessing")
-    filename = "제98기 일일접수세부내역(20251215-20260222).csv"
+    filename = "제98기 일일접수세부내역(20251215-20260308).csv"
     path = os.path.join(input_dir, filename)
 
     if not os.path.isdir(input_dir):
@@ -50,13 +50,19 @@ print(f"📄 출력 Excel: {OUTPUT_XLSX}")
 # =====================
 # 유틸
 # =====================
-def extract_course(text):
+def extract_course(text, fallback=None):
+    def normalize_course(value):
+        value = str(value).strip()
+        if not value or value.lower() == "nan":
+            return None
+        return re.sub(r"\s+", "", value)
+
     text = str(text)
 
     # 1️⃣ 대괄호 안만 추출
     bracket_match = re.search(r"\[(.*?)\]", text)
     if not bracket_match:
-        return None
+        return normalize_course(fallback)
 
     inside = bracket_match.group(1)
 
@@ -64,16 +70,16 @@ def extract_course(text):
     inside = re.sub(r"\d+\s*개월", "", inside)
 
     # 3️⃣ 카테고리 제거 (앞쪽 첫 덩어리)
-    # 공백 2칸 이상 기준으로 분리
-    parts = re.split(r"\s{2,}", inside)
+    # 공백 1칸/2칸 이상 모두 허용
+    parts = re.split(r"\s+", inside.strip(), maxsplit=1)
 
     if len(parts) < 2:
-        return None
+        return normalize_course(fallback)
 
     course = parts[1]
 
     # 4️⃣ 공백 정리
-    return re.sub(r"\s+", "", course)
+    return normalize_course(course)
 
 
 def extract_amount(cash, card):
@@ -190,7 +196,7 @@ refund_rows = []  # (key, payment, amount)
 # }
 # # =====================
 for _, row in df.iterrows():
-    course = extract_course(row["일반/운영여부"])
+    course = extract_course(row["일반/운영여부"], row.get("강좌명"))
     if not course:
         continue
 
