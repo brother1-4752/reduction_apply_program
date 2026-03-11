@@ -12,7 +12,7 @@ import os
 # =====================
 def find_csv_file():
     input_dir = os.path.join("input", "data_preprocessing")
-    filename = "제98기 일일접수세부내역(20251215-20260308).csv"
+    filename = "제98기 일일접수세부내역(20251215-20260309).csv"
     path = os.path.join(input_dir, filename)
 
     if not os.path.isdir(input_dir):
@@ -121,9 +121,14 @@ DISCOUNT_40_SET = {
 DISCOUNT_30_SET = {
     int(base * r) for base in DISCOUNT_30_TO_ORIGINAL.keys() for r in (1 / 3, 2 / 3, 1)
 }
+PIANO_ADVANCED_1_PATTERN = re.compile(r"^피아노[A-Za-z]+-?\d+고급[ⅠI1]$")
 
 
-def calc_discount(amount: int, reg_count: int) -> int:
+def is_piano_advanced_1(course: str) -> bool:
+    return bool(PIANO_ADVANCED_1_PATTERN.match(str(course).strip()))
+
+
+def calc_discount(amount: int, reg_count: int, course: str) -> int:
     """
     amount    : 실제 결제 금액
     reg_count : 등록건 수
@@ -142,16 +147,28 @@ def calc_discount(amount: int, reg_count: int) -> int:
         rate_40 = 0.5
         rate_30 = 0.4
 
+    amount_in_40 = amount in DISCOUNT_40_SET
+    amount_in_30 = amount in DISCOUNT_30_SET
+
+    # ---------------------
+    # 45000 충돌 케이스 분기
+    # - 피아노+알파벳+숫자+고급Ⅰ : 40% 그룹
+    # - 그 외: 30% 그룹
+    # ---------------------
+    if amount == 45000 and amount_in_40 and amount_in_30:
+        if is_piano_advanced_1(course):
+            return int(round(amount * rate_40))
+
     # ---------------------
     # 40% 베이스
     # ---------------------
-    if amount in DISCOUNT_40_SET:
+    if amount_in_40 and not (amount == 45000 and amount_in_30):
         return int(round(amount * rate_40))
 
     # ---------------------
     # 30% 베이스 (원금 기준 계산)
     # ---------------------
-    if amount in DISCOUNT_30_SET:
+    if amount_in_30:
         for discounted, original in DISCOUNT_30_TO_ORIGINAL.items():
             ratio = amount / discounted
 
@@ -302,7 +319,7 @@ result_df["등록건 수"] = result_df.groupby(["회원번호", "이름"]).cumco
 # 감면액 컬럼 추가
 # =====================
 result_df["감면액"] = result_df.apply(
-    lambda row: calc_discount(row["금액"], row["등록건 수"]), axis=1
+    lambda row: calc_discount(row["금액"], row["등록건 수"], row["강좌"]), axis=1
 )
 
 
