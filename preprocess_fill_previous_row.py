@@ -11,7 +11,7 @@ def preprocess_fill_previous_row():
     output_dir = "output/preprocess_fill_previous_row"
     today_str = datetime.today().strftime("%Y-%m-%d")
 
-    input_filename = "동작문화원 감면신청서_26년도 1분기_20260225.csv"
+    input_filename = "동작문화원 감면신청서_26년도 1분기_20260310.csv"
     output_filename = f"동작문화원 감면신청서_26년도 1분기_output_{today_str}.xlsx"
 
     input_path = os.path.join(input_dir, input_filename)
